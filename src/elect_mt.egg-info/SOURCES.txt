@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/elect_mt/__init__.py
+src/elect_mt/__main__.py
+src/elect_mt/cli.py
+src/elect_mt/config.py
+src/elect_mt/processor.py
+src/elect_mt/watcher.py
+src/elect_mt.egg-info/PKG-INFO
+src/elect_mt.egg-info/SOURCES.txt
+src/elect_mt.egg-info/dependency_links.txt
+src/elect_mt.egg-info/entry_points.txt
+src/elect_mt.egg-info/requires.txt
+src/elect_mt.egg-info/top_level.txt
+tests/test_processing.py

@@ -1,0 +1,2 @@
+[console_scripts]
+elect-mt = elect_mt.cli:main

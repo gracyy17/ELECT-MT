@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elect-mt"
+version = "0.1.0"
+description = "Automated image processing app (OpenCV + watchdog) with CI"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "ELECT-MT contributors" }]
+dependencies = [
+  "opencv-python",
+  "watchdog",
+  "numpy",
+  "mediapipe",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+elect-mt = "elect_mt.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

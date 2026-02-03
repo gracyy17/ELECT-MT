@@ -1,0 +1,6 @@
+opencv-python
+watchdog
+numpy
+
+[dev]
+pytest

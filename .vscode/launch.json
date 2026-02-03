@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ELECT-MT: Batch",
+      "type": "python",
+      "request": "launch",
+      "module": "elect_mt",
+      "args": ["batch", "--input", "input", "--output", "output"],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "ELECT-MT: Watch",
+      "type": "python",
+      "request": "launch",
+      "module": "elect_mt",
+      "args": ["watch", "--input", "input", "--output", "output"],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

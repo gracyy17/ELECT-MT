@@ -1,0 +1,62 @@
+Metadata-Version: 2.4
+Name: elect-mt
+Version: 0.1.0
+Summary: Automated image processing app (OpenCV + watchdog) with CI
+Author: ELECT-MT contributors
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: opencv-python
+Requires-Dist: watchdog
+Requires-Dist: numpy
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+
+# ELECT-MT — Automated Image Processing (Python + OpenCV)
+
+This project automatically processes images dropped into an `input/` directory and writes processed outputs to `output/`.
+
+## Features
+- Automatically detects image files (watch mode)
+- Batch mode to process all images in `input/`
+- Applies multiple OpenCV techniques (grayscale, edge detection, invert)
+- CI pipeline via GitHub Actions runs `pytest` on every push/PR
+
+## Quick Start
+
+### 1) Create a virtual environment
+
+Windows (PowerShell):
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### 2) Install dependencies
+```powershell
+pip install -r requirements.txt
+pip install -e .
+```
+
+### 3) Put images into `input/`
+Supported extensions: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tif`, `.tiff`
+
+### 4) Run batch processing
+```powershell
+elect-mt batch --input input --output output
+```
+
+### 5) Run watch processing
+```powershell
+elect-mt watch --input input --output output
+```
+
+## Output naming
+For an input file `cat.jpg`, outputs are written as:
+- `cat_gray.png`
+- `cat_edges.png`
+- `cat_invert.png`
+
+## Testing
+```powershell
+pytest
+```

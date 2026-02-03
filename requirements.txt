@@ -1,0 +1,5 @@
+opencv-python
+watchdog
+numpy
+pytest
+mediapipe

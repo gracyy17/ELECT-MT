@@ -8,6 +8,7 @@ Description-Content-Type: text/markdown
 Requires-Dist: opencv-python
 Requires-Dist: watchdog
 Requires-Dist: numpy
+Requires-Dist: mediapipe
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 
@@ -15,16 +16,36 @@ Requires-Dist: pytest; extra == "dev"
 
 This project automatically processes images dropped into an `input/` directory and writes processed outputs to `output/`.
 
-## Features
-- Automatically detects image files (watch mode)
-- Batch mode to process all images in `input/`
-- Applies multiple OpenCV techniques (grayscale, edge detection, invert)
-- CI pipeline via GitHub Actions runs `pytest` on every push/PR
+## Tools & Technologies
+- Python 3
+- OpenCV (`opencv-python`)
+- MediaPipe (person segmentation for background blur)
+- watchdog (filesystem watch)
+- pytest
+- GitHub Actions (CI)
 
-## Quick Start
+## How Image Processing Works
+For each image, the app generates five outputs:
+- `blur` (background-only blur via MediaPipe segmentation)
+- `sharpen`
+- `thermal` (colormap)
+- `sepia`
+- `clahe` (contrast limited adaptive histogram equalization)
+
+Each output is saved as `inputname_filter.png` in the `output/` folder.
+
+## How CI Works
+On every push or pull request, GitHub Actions runs:
+1) Checkout repository
+2) Set up Python
+3) Install dependencies
+4) Run pytest
+
+Workflow file: [.github/workflows/ci.yml](.github/workflows/ci.yml)
+
+## Run Locally
 
 ### 1) Create a virtual environment
-
 Windows (PowerShell):
 ```powershell
 python -m venv .venv
@@ -42,21 +63,27 @@ Supported extensions: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tif`, `.tiff`
 
 ### 4) Run batch processing
 ```powershell
-elect-mt batch --input input --output output
+python -m elect_mt batch --input input --output output
 ```
 
 ### 5) Run watch processing
 ```powershell
-elect-mt watch --input input --output output
+python -m elect_mt watch --input input --output output
 ```
 
-## Output naming
+## Output Naming
 For an input file `cat.jpg`, outputs are written as:
-- `cat_gray.png`
-- `cat_edges.png`
-- `cat_invert.png`
+- `cat_blur.png`
+- `cat_sharpen.png`
+- `cat_thermal.png`
+- `cat_sepia.png`
+- `cat_clahe.png`
 
 ## Testing
 ```powershell
-pytest
+python -m pytest
 ```
+
+## Screenshots / Examples
+Add your own output screenshots here after running the app.
+

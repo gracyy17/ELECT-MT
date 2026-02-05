@@ -4,16 +4,38 @@
 		{
 			"label": "pytest",
 			"type": "shell",
-			"command": "python",
+			"command": "${command:python.interpreterPath}",
 			"args": [
 				"-m",
 				"pytest"
 			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
 			"isBackground": false,
 			"problemMatcher": [
 				"$pytest"
 			],
 			"group": "test"
+		},
+		{
+			"label": "elect-mt: batch (venv)",
+			"type": "shell",
+			"command": "${command:python.interpreterPath}",
+			"args": [
+				"-m",
+				"elect_mt",
+				"batch",
+				"--input",
+				"input",
+				"--output",
+				"output",
+				"--overwrite"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"isBackground": false
 		}
 	]
 }

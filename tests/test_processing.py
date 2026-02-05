@@ -5,7 +5,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from elect_mt.processor import process_directory, process_file
+from elect_mt.processor import iter_image_files, is_image_path, process_directory, process_file
 
 
 def _write_test_image(path: Path) -> np.ndarray:
@@ -33,6 +33,7 @@ def test_process_file_writes_outputs(tmp_path: Path) -> None:
         output_dir / "sample_sharpen.png",
         output_dir / "sample_thermal.png",
         output_dir / "sample_sepia.png",
+        output_dir / "sample_clahe.png",
     }
     assert set(result.outputs) == expected
     for p in expected:
@@ -53,3 +54,30 @@ def test_process_directory_ignores_non_images(tmp_path: Path) -> None:
 
     results = process_directory(input_dir, output_dir)
     assert results == []
+
+
+def test_is_image_path_and_iter_image_files(tmp_path: Path) -> None:
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    img = input_dir / "a.png"
+    txt = input_dir / "note.txt"
+    img.write_bytes(b"\x89PNG\r\n\x1a\n")
+    txt.write_text("not an image", encoding="utf-8")
+
+    assert is_image_path(img)
+    assert not is_image_path(txt)
+
+    images = list(iter_image_files(input_dir))
+    assert images == [img]
+
+
+def test_process_file_skips_corrupt_image(tmp_path: Path) -> None:
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+
+    corrupt = input_dir / "bad.png"
+    corrupt.write_text("not really an image", encoding="utf-8")
+
+    result = process_file(corrupt, output_dir)
+    assert result is None

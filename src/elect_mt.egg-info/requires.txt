@@ -1,6 +1,7 @@
 opencv-python
 watchdog
 numpy
+mediapipe
 
 [dev]
 pytest

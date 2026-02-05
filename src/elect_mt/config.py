@@ -14,4 +14,5 @@ OUTPUT_VARIANTS = (
     "sharpen",
     "thermal",
     "sepia",
+    "clahe",
 )

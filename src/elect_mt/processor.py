@@ -48,9 +48,19 @@ def _get_segmentation_model():
 
     try:
         import mediapipe as mp
-        _segmentation_model = mp.solutions.selfie_segmentation.SelfieSegmentation(
-            model_selection=1
-        )
+        solutions = getattr(mp, "solutions", None)
+        if solutions is None:
+            logger.warning("MediaPipe solutions module is unavailable.")
+            _segmentation_model = None
+            return _segmentation_model
+
+        selfie_segmentation = getattr(solutions, "selfie_segmentation", None)
+        if selfie_segmentation is None:
+            logger.warning("MediaPipe selfie_segmentation is unavailable.")
+            _segmentation_model = None
+            return _segmentation_model
+
+        _segmentation_model = selfie_segmentation.SelfieSegmentation(model_selection=1)
         logger.info("Loaded MediaPipe SelfieSegmentation model.")
     except Exception as exc:
         logger.warning("Segmentation model unavailable: %s", exc)
@@ -79,17 +89,12 @@ def _get_yolo_model() -> Any | None:
 
 
 def blur_background_only(bgr: np.ndarray, model) -> np.ndarray:
-    if model is None:
+    seg_mask = _safe_process_segmentation(bgr, model)
+    if seg_mask is None:
+        logger.warning("Segmentation mask missing; applying full blur.")
         return cv2.GaussianBlur(bgr, (31, 31), 0)
 
-    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-    result = model.process(rgb)
-
-    if result.segmentation_mask is None:
-        logger.warning("Segmentation mask missing; skipping background blur.")
-        return cv2.GaussianBlur(bgr, (31, 31), 0)
-
-    mask = result.segmentation_mask.astype(np.float32)
+    mask = seg_mask.astype(np.float32)
     mask = cv2.GaussianBlur(mask, (21, 21), 0)
     mask_3 = np.stack([mask] * 3, axis=-1)
 

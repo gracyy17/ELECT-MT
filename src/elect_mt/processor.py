@@ -108,8 +108,22 @@ def blur_background_only(bgr: np.ndarray, model) -> np.ndarray:
 
 
 def _safe_process_segmentation(bgr: np.ndarray, model) -> np.ndarray | None:
+    def _grabcut_mask() -> np.ndarray | None:
+        try:
+            h, w = bgr.shape[:2]
+            mask = np.zeros((h, w), np.uint8)
+            rect = (int(w * 0.05), int(h * 0.05), int(w * 0.9), int(h * 0.9))
+            bgd_model = np.zeros((1, 65), np.float64)
+            fgd_model = np.zeros((1, 65), np.float64)
+            cv2.grabCut(bgr, mask, rect, bgd_model, fgd_model, 3, cv2.GC_INIT_WITH_RECT)
+            fg = (mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD)
+            return fg.astype(np.float32)
+        except Exception as exc:
+            logger.warning("GrabCut fallback failed; skipping. (%s)", exc)
+            return None
+
     if model is None:
-        return None
+        return _grabcut_mask()
 
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     if rgb.dtype != np.uint8:
@@ -124,7 +138,7 @@ def _safe_process_segmentation(bgr: np.ndarray, model) -> np.ndarray | None:
 
     mask = getattr(result, "segmentation_mask", None)
     if mask is None:
-        return None
+        return _grabcut_mask()
     return mask
 
 

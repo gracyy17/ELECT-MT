@@ -32,6 +32,7 @@ python -m pip install -e .
 ```
 
 For consistent local/CI results, keep `yolov8n.pt` in the repo root (used by YOLO person counting).
+OpenCV is pinned to 4.9.x to avoid NumPy>=2 conflicts in CI.
 
 ### 3) Run batch processing
 Using the console script:

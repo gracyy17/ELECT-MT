@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "ELECT-MT contributors" }]
 dependencies = [
-  "opencv-python==4.13.0.92",
+  "opencv-python==4.9.0.80",
   "watchdog==6.0.0",
   "numpy==1.26.4",
   "mediapipe==0.10.11",

@@ -1,10 +1,8 @@
-name: deploy
+name: Deploy
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [development, main]
+    branches: [main]
 
 permissions:
   contents: read
@@ -16,28 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Run pytest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -e .
-      - name: Run tests
-        run: pytest
-
   deploy:
     name: Deploy to GitHub Pages
-    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 

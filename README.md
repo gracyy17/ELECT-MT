@@ -31,6 +31,8 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
+For consistent local/CI results, keep `yolov8n.pt` in the repo root (used by YOLO person counting).
+
 ### 3) Run batch processing
 Using the console script:
 ```powershell

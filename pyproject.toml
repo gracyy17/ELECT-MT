@@ -10,14 +10,17 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "ELECT-MT contributors" }]
 dependencies = [
-  "opencv-python",
-  "watchdog",
-  "numpy",
-  "mediapipe",
+  "opencv-python==4.13.0.92",
+  "watchdog==6.0.0",
+  "numpy==1.26.4",
+  "mediapipe==0.10.11",
+  "ultralytics==8.4.12",
+  "torch==2.10.0",
+  "torchvision==0.25.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest==9.0.2"]
 
 [project.scripts]
 elect-mt = "elect_mt.cli:main"

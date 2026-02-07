@@ -1,5 +1,8 @@
-opencv-python
-watchdog
-numpy
-pytest
-mediapipe
+opencv-python==4.13.0.92
+watchdog==6.0.0
+numpy==1.26.4
+mediapipe==0.10.11
+ultralytics==8.4.12
+torch==2.10.0
+torchvision==0.25.0
+pytest==9.0.2

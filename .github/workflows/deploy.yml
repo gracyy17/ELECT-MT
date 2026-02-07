@@ -33,7 +33,9 @@ jobs:
           pip install -e .
 
       - name: Run batch processing
-        run: python -m elect_mt batch --input input --output output --overwrite
+        run: |
+          rm -rf output
+          python -m elect_mt batch --input input --output output --overwrite
 
       - name: Commit output images
         if: github.actor != 'github-actions[bot]'
@@ -52,7 +54,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/
+          path: output/
 
       - name: Deploy to GitHub Pages
         id: deployment

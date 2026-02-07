@@ -23,26 +23,26 @@ def test_process_file_writes_outputs(tmp_path: Path) -> None:
 
     # Use a lossless input format so pixel values round-trip reliably.
     src = input_dir / "sample.png"
-    original = _write_test_image(src)
+    _write_test_image(src)
 
     result = process_file(src, output_dir)
     assert result is not None
 
     expected = {
-        output_dir / "sample_blur.png",
-        output_dir / "sample_sharpen.png",
-        output_dir / "sample_thermal.png",
-        output_dir / "sample_sepia.png",
-        output_dir / "sample_clahe.png",
+        output_dir / "sample_background_blur.png",
+        output_dir / "sample_background_removal.png",
+        output_dir / "sample_color_identification.png",
+        output_dir / "sample_object_detection_count.png",
     }
     assert set(result.outputs) == expected
     for p in expected:
         assert p.exists()
         assert p.stat().st_size > 0
 
-    thermal = cv2.imread(str(output_dir / "sample_thermal.png"), cv2.IMREAD_COLOR)
-    assert thermal is not None
-    assert thermal.ndim == 3 and thermal.shape[2] == 3
+    bg_removed = cv2.imread(str(output_dir / "sample_background_removal.png"), cv2.IMREAD_UNCHANGED)
+    assert bg_removed is not None
+    assert bg_removed.ndim == 3
+    assert bg_removed.shape[2] in (3, 4)
 
 
 def test_process_directory_ignores_non_images(tmp_path: Path) -> None:

@@ -36,6 +36,7 @@ jobs:
         run: |
           rm -rf output
           python -m elect_mt batch --input input --output output --overwrite
+          mkdir -p output
 
       - name: Commit output images
         if: github.actor != 'github-actions[bot]'

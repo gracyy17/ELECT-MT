@@ -96,6 +96,8 @@ def blur_background_only(bgr: np.ndarray, model) -> np.ndarray:
 
     mask = seg_mask.astype(np.float32)
     mask = cv2.GaussianBlur(mask, (21, 21), 0)
+    mask = cv2.dilate(mask, np.ones((5, 5), np.uint8), iterations=1)
+    mask = np.clip((mask - 0.2) / 0.8, 0.0, 1.0)
     mask_3 = np.stack([mask] * 3, axis=-1)
 
     foreground = mask_3  # person remains sharp
@@ -171,6 +173,8 @@ def _to_background_removal(bgr: np.ndarray, model=None) -> np.ndarray:
 
     mask = seg_mask.astype(np.float32)
     mask = cv2.GaussianBlur(mask, (21, 21), 0)
+    mask = cv2.dilate(mask, np.ones((5, 5), np.uint8), iterations=1)
+    mask = np.clip((mask - 0.2) / 0.8, 0.0, 1.0)
     alpha = np.clip(mask * 255.0, 0, 255).astype(np.uint8)
     bgra[:, :, 3] = alpha
     return bgra

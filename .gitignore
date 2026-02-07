@@ -8,5 +8,3 @@ __pycache__/
 .DS_Store
 
 # Outputs / sample inputs
-input/
-output/

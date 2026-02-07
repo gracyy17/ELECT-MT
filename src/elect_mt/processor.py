@@ -245,147 +245,24 @@ def _to_object_detection_count(bgr: np.ndarray, model=None) -> np.ndarray:
         model = _get_segmentation_model()
 
     draw_boxes: list[tuple[int, int, int, int]] = []
-
-    yolo = _get_yolo_model()
-    if yolo is not None:
-        try:
-            predict = getattr(yolo, "predict", None)
-            if predict is None:
-                raise AttributeError("YOLO model has no predict method")
-            results = predict(bgr, verbose=False, conf=0.25)
-            if results:
-                result = results[0]
-                boxes = getattr(result, "boxes", None)
-                names = getattr(result, "names", {})
-                if boxes is not None:
-                    classes = boxes.cls.cpu().numpy().astype(int)
-                    xyxy = boxes.xyxy.cpu().numpy()
-                    person_class = None
-                    for key, value in names.items():
-                        if value == "person":
-                            person_class = int(key)
-                            break
-                    if person_class is None:
-                        person_class = 0
-                    person_mask = classes == person_class
-                    count = int(np.sum(person_mask))
-                    out = bgr.copy()
-                    for box in xyxy[person_mask]:
-                        x1, y1, x2, y2 = [int(v) for v in box]
-                        cv2.rectangle(out, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                    cv2.putText(
-                        out,
-                        f"persons: {count}",
-                        (10, 28),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.9,
-                        (0, 255, 0),
-                        2,
-                        cv2.LINE_AA,
-                    )
-                    return out
-        except Exception as exc:
-            logger.warning("YOLO inference failed; falling back. (%s)", exc)
-
-    hog = cv2.HOGDescriptor()
-    people_detector = getattr(cv2, "HOGDescriptor_getDefaultPeopleDetector", None)
-    if people_detector is None:
-        logger.warning("HOG people detector is unavailable.")
-    else:
-        hog.setSVMDetector(people_detector())
-
-    def _nms(boxes, scores, iou_thresh=0.6):
-        if not boxes:
-            return []
-        order = sorted(range(len(boxes)), key=lambda i: scores[i], reverse=True)
-        kept = []
-
-        def iou(a, b):
-            ax1, ay1, ax2, ay2 = a
-            bx1, by1, bx2, by2 = b
-            inter_x1 = max(ax1, bx1)
-            inter_y1 = max(ay1, by1)
-            inter_x2 = min(ax2, bx2)
-            inter_y2 = min(ay2, by2)
-            if inter_x2 <= inter_x1 or inter_y2 <= inter_y1:
-                return 0.0
-            inter = (inter_x2 - inter_x1) * (inter_y2 - inter_y1)
-            area_a = (ax2 - ax1) * (ay2 - ay1)
-            area_b = (bx2 - bx1) * (by2 - by1)
-            return inter / max(1e-6, area_a + area_b - inter)
-
-        while order:
-            i = order.pop(0)
-            kept.append(boxes[i])
-            order = [j for j in order if iou(boxes[i], boxes[j]) < iou_thresh]
-        return kept
-
     count = 0
 
-    if people_detector is not None:
-        h, w = bgr.shape[:2]
-        scale = 1.0
-        max_side = max(h, w)
+    haar_dir = getattr(getattr(cv2, "data", object()), "haarcascades", "")
+    cascade_path = os.path.join(haar_dir, "haarcascade_frontalface_default.xml")
+    face_cascade = cv2.CascadeClassifier(cascade_path)
 
-        if max_side < 600:
-            scale = 800 / max_side
-        elif max_side > 1200:
-            scale = 1200 / max_side
+    if not face_cascade.empty():
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
 
-        resized = cv2.resize(bgr, (int(w * scale), int(h * scale))) if scale != 1.0 else bgr
-
-        rects, weights = hog.detectMultiScale(
-            resized,
-            winStride=(8, 8),
-            padding=(16, 16),
-            scale=1.05,
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(40, 40),
         )
-
-        boxes, scores = [], []
-        min_h = int(resized.shape[0] * 0.30)
-
-        for i, (x, y, rw, rh) in enumerate(rects):
-            score = float(weights[i]) if i < len(weights) else 1.0
-            if score < 0.8:
-                continue
-            if rh < min_h:
-                continue
-            aspect = rh / max(1, rw)
-            if not (1.5 <= aspect <= 4.0):
-                continue
-
-            boxes.append((x, y, x + rw, y + rh))
-            scores.append(score)
-
-        draw_boxes = _nms(boxes, scores, 0.6)
+        draw_boxes = [(x, y, x + fw, y + fh) for (x, y, fw, fh) in faces]
         count = len(draw_boxes)
-
-    if count == 0:
-        haar_dir = getattr(getattr(cv2, "data", object()), "haarcascades", "")
-        cascade_path = os.path.join(haar_dir, "haarcascade_frontalface_default.xml")
-        face_cascade = cv2.CascadeClassifier(cascade_path)
-
-        if not face_cascade.empty():
-            gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-            gray = cv2.equalizeHist(gray)
-
-            faces = face_cascade.detectMultiScale(
-                gray,
-                scaleFactor=1.1,
-                minNeighbors=5,
-                minSize=(40, 40),
-            )
-            draw_boxes = [(x, y, x + fw, y + fh) for (x, y, fw, fh) in faces]
-            count = len(draw_boxes)
-
-    if count == 0:
-        seg_mask = _safe_process_segmentation(bgr, model)
-        if seg_mask is not None:
-            mask = (seg_mask > 0.6).astype(np.uint8) * 255
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=2)
-            num_labels, _ = cv2.connectedComponents(mask)
-            count = max(0, num_labels - 1)
 
     out = bgr.copy()
     for (x1, y1, x2, y2) in draw_boxes:

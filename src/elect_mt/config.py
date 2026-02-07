@@ -10,9 +10,8 @@ SUPPORTED_IMAGE_EXTENSIONS = (
 )
 
 OUTPUT_VARIANTS = (
-    "blur",
-    "sharpen",
-    "thermal",
-    "sepia",
-    "clahe",
+    "background_blur",
+    "background_removal",
+    "color_identification",
+    "object_detection_count",
 )

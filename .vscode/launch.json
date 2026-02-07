@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "ELECT-MT: Batch",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "elect_mt",
       "args": ["batch", "--input", "input", "--output", "output"],
@@ -12,7 +12,7 @@
     },
     {
       "name": "ELECT-MT: Watch",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "elect_mt",
       "args": ["watch", "--input", "input", "--output", "output"],

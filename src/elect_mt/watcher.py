@@ -6,6 +6,7 @@ from pathlib import Path
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from .config import OUTPUT_VARIANTS, SUPPORTED_IMAGE_EXTENSIONS
 from .processor import ProcessResult, process_file
 
 
@@ -77,15 +78,40 @@ class ImageEventHandler(FileSystemEventHandler):
             raise last_exc
         return None
 
+    def _maybe_delete_outputs(self, path: Path) -> None:
+        path = path.resolve()
+        if path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
+            return
+
+        try:
+            path.relative_to(self.input_dir.resolve())
+        except ValueError:
+            return
+
+        for variant_name in OUTPUT_VARIANTS:
+            output_path = self.output_dir / f"{path.stem}_{variant_name}.png"
+            try:
+                output_path.unlink()
+            except FileNotFoundError:
+                continue
+
     def on_created(self, event):  # type: ignore[override]
         if event.is_directory:
             return
         self._maybe_process(Path(event.src_path))
 
+    def on_deleted(self, event):  # type: ignore[override]
+        if event.is_directory:
+            return
+        self._maybe_delete_outputs(Path(event.src_path))
+
     def on_moved(self, event):  # type: ignore[override]
         if event.is_directory:
             return
-        self._maybe_process(Path(event.dest_path))
+        src_path = Path(event.src_path)
+        dest_path = Path(event.dest_path)
+        self._maybe_delete_outputs(src_path)
+        self._maybe_process(dest_path)
 
 
 def watch(

@@ -1,6 +1,7 @@
 # ELECT-MT — Automated Image Processing (Python + OpenCV)
 
 ELECT-MT processes images from an `input/` directory and writes processed outputs to `output/`.
+When running **Watch** mode, it automatically applies image processing as soon as new images are added to `input/`.
 
 It supports two modes:
 - **Batch**: process everything currently in `input/`

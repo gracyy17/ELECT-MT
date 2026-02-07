@@ -80,14 +80,14 @@ def _get_yolo_model() -> Any | None:
 
 def blur_background_only(bgr: np.ndarray, model) -> np.ndarray:
     if model is None:
-        return bgr  # skip blur if model unavailable
+        return cv2.GaussianBlur(bgr, (31, 31), 0)
 
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     result = model.process(rgb)
 
     if result.segmentation_mask is None:
         logger.warning("Segmentation mask missing; skipping background blur.")
-        return bgr
+        return cv2.GaussianBlur(bgr, (31, 31), 0)
 
     mask = result.segmentation_mask.astype(np.float32)
     mask = cv2.GaussianBlur(mask, (21, 21), 0)

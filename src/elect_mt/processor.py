@@ -100,7 +100,7 @@ def blur_background_only(bgr: np.ndarray, model) -> np.ndarray:
     mask = np.clip((mask - 0.1) / 0.9, 0.0, 1.0)
     mask_3 = np.stack([mask] * 3, axis=-1)
 
-    foreground = mask_3  # person remains sharp
+    foreground = mask_3 
     background = 1.0 - foreground  # blur background
 
     blurred = cv2.GaussianBlur(bgr, (91, 91), 0)

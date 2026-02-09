@@ -258,6 +258,44 @@ def _to_color_identification(bgr: np.ndarray) -> np.ndarray:
     return out
 
 
+def _overlap_ratio(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> float:
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+
+    inter_w = max(0, min(ax2, bx2) - max(ax1, bx1))
+    inter_h = max(0, min(ay2, by2) - max(ay1, by1))
+    inter = inter_w * inter_h
+    if inter <= 0:
+        return 0.0
+
+    area_a = max(0, ax2 - ax1) * max(0, ay2 - ay1)
+    area_b = max(0, bx2 - bx1) * max(0, by2 - by1)
+    if area_a <= 0 or area_b <= 0:
+        return 0.0
+
+    return float(inter) / float(min(area_a, area_b))
+
+
+def _suppress_overlapping_boxes(
+    boxes: list[tuple[int, int, int, int]], *, overlap_threshold: float = 0.85
+) -> list[tuple[int, int, int, int]]:
+    if not boxes:
+        return boxes
+
+    def _area(box: tuple[int, int, int, int]) -> int:
+        x1, y1, x2, y2 = box
+        return max(0, x2 - x1) * max(0, y2 - y1)
+
+    ordered = sorted(boxes, key=_area)  # keep tighter boxes; drop big duplicates
+    kept: list[tuple[int, int, int, int]] = []
+    for candidate in ordered:
+        if any(_overlap_ratio(candidate, existing) >= overlap_threshold for existing in kept):
+            continue
+        kept.append(candidate)
+
+    return kept
+
+
 def _to_object_detection_count(bgr: np.ndarray, model=None) -> np.ndarray:
     if model is None:
         model = _get_segmentation_model()
@@ -279,7 +317,8 @@ def _to_object_detection_count(bgr: np.ndarray, model=None) -> np.ndarray:
             minNeighbors=5,
             minSize=(40, 40),
         )
-        draw_boxes = [(x, y, x + fw, y + fh) for (x, y, fw, fh) in faces]
+        draw_boxes = [(int(x), int(y), int(x + fw), int(y + fh)) for (x, y, fw, fh) in faces]
+        draw_boxes = _suppress_overlapping_boxes(draw_boxes)
         count = len(draw_boxes)
 
     out = bgr.copy()
@@ -303,7 +342,7 @@ def process_image_variants(bgr: np.ndarray, model=None) -> dict[str, np.ndarray]
         "background_blur": _to_blur(bgr, model),
         "background_removal": _to_background_removal(bgr, model),
         "color_identification": _to_color_identification(bgr),
-        "object_detection_count": _to_object_detection_count(bgr, model),
+        "person_detection_count": _to_object_detection_count(bgr, model),
     }
 
 

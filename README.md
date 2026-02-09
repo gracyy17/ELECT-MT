@@ -8,12 +8,23 @@ It supports two modes:
 - **Watch**: monitor `input/` and process new images as they arrive
 
 ## Tools & Technologies
-- Python 3
+- Python
 - OpenCV (`opencv-python`)
-- MediaPipe (person segmentation for background blur)
+- MediaPipe (selfie segmentation for background blur/removal)
 - watchdog (filesystem watch)
 - pytest
 - GitHub Actions (CI)
+
+## Library Versions (Pinned)
+- Python: >=3.10
+- opencv-python: 4.9.0.80
+- mediapipe: 0.10.11
+- numpy: 1.26.4
+- watchdog: 6.0.0
+- ultralytics: 8.4.12
+- torch: 2.10.0
+- torchvision: 0.25.0
+- pytest (dev): 9.0.2
 
 ## Quickstart (Windows / PowerShell)
 
@@ -31,7 +42,6 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-For consistent local/CI results, keep `yolov8n.pt` in the repo root (used by YOLO person counting).
 OpenCV is pinned to 4.9.x to avoid NumPy>=2 conflicts in CI.
 
 ### 3) Run batch processing
@@ -51,12 +61,11 @@ elect-mt watch --input input --output output
 ```
 
 ## How Image Processing Works
-For each image, the app generates five outputs:
-- `blur` (background-only blur via MediaPipe segmentation)
-- `sharpen`
-- `thermal` (colormap)
-- `sepia`
-- `clahe` (contrast limited adaptive histogram equalization)
+For each image, the app generates four outputs:
+- `background_blur` (background-only blur via MediaPipe segmentation; falls back to GrabCut)
+- `background_removal` (alpha mask via MediaPipe segmentation; PNG with transparency)
+- `color_identification` (dominant color swatches + labels)
+- `person_detection_count` (OpenCV Haar-based person/face count overlay)
 
 Each output is saved as `inputname_filter.png` in the `output/` folder.
 
@@ -99,11 +108,10 @@ Supported extensions: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tif`, `.tiff`
 
 ## Output Naming
 For an input file `cat.jpg`, outputs are written as:
-- `cat_blur.png`
-- `cat_sharpen.png`
-- `cat_thermal.png`
-- `cat_sepia.png`
-- `cat_clahe.png`
+- `cat_background_blur.png`
+- `cat_background_removal.png`
+- `cat_color_identification.png`
+- `cat_person_detection_count.png`
 
 ## Testing
 ```powershell

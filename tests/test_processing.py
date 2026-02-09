@@ -32,7 +32,7 @@ def test_process_file_writes_outputs(tmp_path: Path) -> None:
         output_dir / "sample_background_blur.png",
         output_dir / "sample_background_removal.png",
         output_dir / "sample_color_identification.png",
-        output_dir / "sample_object_detection_count.png",
+        output_dir / "sample_person_detection_count.png",
     }
     assert set(result.outputs) == expected
     for p in expected:

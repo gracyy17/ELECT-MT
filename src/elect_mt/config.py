@@ -13,5 +13,5 @@ OUTPUT_VARIANTS = (
     "background_blur",
     "background_removal",
     "color_identification",
-    "object_detection_count",
+    "person_detection_count",
 )

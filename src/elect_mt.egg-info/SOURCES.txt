@@ -12,4 +12,5 @@ src/elect_mt.egg-info/dependency_links.txt
 src/elect_mt.egg-info/entry_points.txt
 src/elect_mt.egg-info/requires.txt
 src/elect_mt.egg-info/top_level.txt
+tests/test_cli.py
 tests/test_processing.py

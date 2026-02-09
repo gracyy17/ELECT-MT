@@ -5,34 +5,108 @@ Summary: Automated image processing app (OpenCV + watchdog) with CI
 Author: ELECT-MT contributors
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
-Requires-Dist: opencv-python
-Requires-Dist: watchdog
-Requires-Dist: numpy
-Requires-Dist: mediapipe
+Requires-Dist: opencv-python==4.9.0.80
+Requires-Dist: watchdog==6.0.0
+Requires-Dist: numpy==1.26.4
+Requires-Dist: mediapipe==0.10.11
+Requires-Dist: ultralytics==8.4.12
+Requires-Dist: torch==2.10.0
+Requires-Dist: torchvision==0.25.0
 Provides-Extra: dev
-Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest==9.0.2; extra == "dev"
 
 # ELECT-MT — Automated Image Processing (Python + OpenCV)
 
-This project automatically processes images dropped into an `input/` directory and writes processed outputs to `output/`.
+ELECT-MT processes images from an `input/` directory and writes processed outputs to `output/`.
+When running **Watch** mode, it automatically applies image processing as soon as new images are added to `input/`.
+
+It supports two modes:
+- **Batch**: process everything currently in `input/`
+- **Watch**: monitor `input/` and process new images as they arrive
 
 ## Tools & Technologies
-- Python 3
+- Python
 - OpenCV (`opencv-python`)
-- MediaPipe (person segmentation for background blur)
+- MediaPipe (selfie segmentation for background blur/removal)
 - watchdog (filesystem watch)
 - pytest
 - GitHub Actions (CI)
 
+## Library Versions (Pinned)
+- Python: >=3.10
+- opencv-python: 4.9.0.80
+- mediapipe: 0.10.11
+- numpy: 1.26.4
+- watchdog: 6.0.0
+- ultralytics: 8.4.12
+- torch: 2.10.0
+- torchvision: 0.25.0
+- pytest (dev): 9.0.2
+
+## Quickstart (Windows / PowerShell)
+
+### 1) Create and activate a virtual environment
+```powershell
+python -m venv .venv
+.
+.venv\Scripts\Activate.ps1
+```
+
+### 2) Install the project
+Editable install (recommended for development):
+```powershell
+python -m pip install -r requirements.txt
+python -m pip install -e .
+```
+
+OpenCV is pinned to 4.9.x to avoid NumPy>=2 conflicts in CI.
+
+### 3) Run batch processing
+Using the console script:
+```powershell
+elect-mt batch --input input --output output --overwrite
+```
+
+Or via module execution:
+```powershell
+python -m elect_mt batch --input input --output output --overwrite
+```
+
+### 4) Run watch mode
+```powershell
+elect-mt watch --input input --output output
+```
+
 ## How Image Processing Works
-For each image, the app generates five outputs:
-- `blur` (background-only blur via MediaPipe segmentation)
-- `sharpen`
-- `thermal` (colormap)
-- `sepia`
-- `clahe` (contrast limited adaptive histogram equalization)
+For each image, the app generates four outputs:
+- `background_blur` (background-only blur via MediaPipe segmentation; falls back to GrabCut)
+- `background_removal` (alpha mask via MediaPipe segmentation; PNG with transparency)
+- `color_identification` (dominant color swatches + labels)
+- `person_detection_count` (OpenCV Haar-based person/face count overlay)
 
 Each output is saved as `inputname_filter.png` in the `output/` folder.
+
+## CLI
+
+After `pip install -e .`, the `elect-mt` command is available.
+
+### Batch
+```powershell
+elect-mt batch --input input --output output
+```
+
+Options:
+- `--recursive`: process images in subfolders
+- `--overwrite`: replace existing outputs
+
+### Watch
+```powershell
+elect-mt watch --input input --output output
+```
+
+Options:
+- `--recursive`: watch subfolders
+- `--overwrite`: replace existing outputs
 
 ## How CI Works
 On every push or pull request, GitHub Actions runs:
@@ -43,46 +117,29 @@ On every push or pull request, GitHub Actions runs:
 
 Workflow file: [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
-## Run Locally
+## Inputs
 
-### 1) Create a virtual environment
-Windows (PowerShell):
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
+Put images into `input/`.
 
-### 2) Install dependencies
-```powershell
-pip install -r requirements.txt
-pip install -e .
-```
-
-### 3) Put images into `input/`
 Supported extensions: `.png`, `.jpg`, `.jpeg`, `.bmp`, `.tif`, `.tiff`
-
-### 4) Run batch processing
-```powershell
-python -m elect_mt batch --input input --output output
-```
-
-### 5) Run watch processing
-```powershell
-python -m elect_mt watch --input input --output output
-```
 
 ## Output Naming
 For an input file `cat.jpg`, outputs are written as:
-- `cat_blur.png`
-- `cat_sharpen.png`
-- `cat_thermal.png`
-- `cat_sepia.png`
-- `cat_clahe.png`
+- `cat_background_blur.png`
+- `cat_background_removal.png`
+- `cat_color_identification.png`
+- `cat_person_detection_count.png`
 
 ## Testing
 ```powershell
 python -m pytest
 ```
+
+## Git hygiene (important)
+
+Do not commit virtual environments.
+
+This repo’s `.gitignore` ignores `.venv/`, `.venv*/`, `venv/`, and `venv*/` to prevent accidentally pushing large binary files (which GitHub will reject).
 
 ## Screenshots / Examples
 Add your own output screenshots here after running the app.

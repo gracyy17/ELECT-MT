@@ -11,16 +11,17 @@ It supports two modes:
 - Python
 - OpenCV (`opencv-python`)
 - MediaPipe (selfie segmentation for background blur/removal)
-- watchdog (filesystem watch)
 - pytest
 - GitHub Actions (CI)
 
 ## Library Versions (Pinned)
 - Python: >=3.10
 - opencv-python: 4.9.0.80
+
+## Update for Deployment Feature
+This section was added to update the feature/deployment branch and enable push and pull request actions.
 - mediapipe: 0.10.11
 - numpy: 1.26.4
-- watchdog: 6.0.0
 - ultralytics: 8.4.12
 - torch: 2.10.0
 - torchvision: 0.25.0

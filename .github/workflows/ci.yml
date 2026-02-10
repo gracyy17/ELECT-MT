@@ -40,6 +40,8 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install -e .
 
+        # Installed the package in editable mode to ensure tests can import it
+
       - name: Run tests
         run: |
           python -m pytest -q
